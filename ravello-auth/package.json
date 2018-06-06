@@ -1,0 +1,31 @@
+{
+  "name": "ravello-auth",
+  "version": "1.0.0",
+  "description": "authenticate against Ravello identity domain",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --recursive ./test/",
+    "coverage": "istanbul cover _mocha -- -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codygreen/Agility-Training-Portal.git"
+  },
+  "author": "c.green@f5.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codygreen/Agility-Training-Portal/issues"
+  },
+  "homepage": "https://github.com/codygreen/Agility-Training-Portal#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "sinon": "^5.0.10"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.2.2",
+    "ravello-js": "^1.0.6"
+  }
+}
