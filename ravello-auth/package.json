@@ -25,6 +25,7 @@
     "sinon": "^5.0.10"
   },
   "dependencies": {
+    "dotenv": "^6.0.0",
     "jsonwebtoken": "^8.2.2",
     "ravello-js": "^1.0.6"
   }

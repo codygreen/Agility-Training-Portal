@@ -11,3 +11,4 @@ Thumbs.db
 node_modules
 config.js
 ravello-auth/coverage
+*.env

@@ -16,6 +16,7 @@
 'use strict';
 const r = require('ravello-js');
 const jwt = require('jsonwebtoken');
+const result = require('dotenv').config();
 
 class RavelloAuth {
     constructor({ username = null, password = null, domain = null } = {}) {
@@ -68,7 +69,9 @@ class RavelloAuth {
                         'audience': 'F5 Labs'
                     });
                     resolve({'jwt': token});
-                } 
+                } else {
+                    reject(new Error('Error: RavelloAuth: no response from ravello-js.getCurrentUser'));
+                }
             }).catch((err)=> {
                 console.error('ERROR LOGGING IN');
                 reject(err);

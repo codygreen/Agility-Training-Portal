@@ -25,6 +25,7 @@ chai.should();
 
 const Auth = require('../index.js');
 let r = require('ravello-js');
+const result = require('dotenv').config();
 
 // variables used for testing
 const username = 'bob.johnson@f5.com';
@@ -73,7 +74,17 @@ describe('Test ravell-js promise reject', function () {
         sinon.stub(r, 'getCurrentUser').rejects(new Error('test error'));
         return auth.auth()
             .should.be.rejectedWith(Error);
-        
+    });
+    after(function() {
+        r.getCurrentUser.restore();
+    });
+});
+describe('Test ravell-js with empty response', function () {
+    it('Test empty JWT_SECRET', function () {
+        const auth = new Auth({ username, password, domain });
+        sinon.stub(r, 'getCurrentUser').resolves(null);
+        return auth.auth()
+            .should.be.rejectedWith(Error);
     });
     after(function() {
         r.getCurrentUser.restore();
@@ -83,7 +94,7 @@ describe('Test ravell-js promise reject', function () {
     it('Test empty JWT_SECRET', function () {
         sinon.stub(r, 'getCurrentUser').resolves('12344');
         const auth = new Auth({ username, password, domain });
-        process.env.JWT_SECRET = null;
+        delete process.env.JWT_SECRET;
         return auth.auth()
             .should.rejectedWith(Error);
     });
