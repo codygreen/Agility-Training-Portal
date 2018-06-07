@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 'use strict';
+
 const r = require('ravello-js');
 const jwt = require('jsonwebtoken');
-const result = require('dotenv').config();
+const dotenv = require('dotenv').config();
 
 class RavelloAuth {
     constructor({ username = null, password = null, domain = null } = {}) {
@@ -52,7 +53,6 @@ class RavelloAuth {
             r.getCurrentUser().then((res) => {
                 if(res) {
                     // Authentication successful, create JWT
-                    console.log('TEST' + process.env.JWT_SECRET + ':' + typeof(process.env.JWT_SECRET));
                     var JWTSecret = process.env.JWT_SECRET || null;
                     if(JWTSecret === null) {
                         reject(new Error('Ravello.createJWT: JWT secret not defined'));
@@ -64,11 +64,11 @@ class RavelloAuth {
 
                     // Sign the JWT payload
                     var token = jwt.sign(JWTPayload, JWTSecret, {
-                        'expiresIn': 14400, // expires in 4 hours
-                        'issuer': 'F5 Networks - Agility Labs',
-                        'audience': 'F5 Labs'
+                        'expiresIn': process.env.EXPIRESIN,
+                        'issuer': process.env.ISSUER,
+                        'audience': process.env.AUDIENCE
                     });
-                    resolve({'jwt': token});
+                    resolve(token);
                 } else {
                     reject(new Error('Error: RavelloAuth: no response from ravello-js.getCurrentUser'));
                 }

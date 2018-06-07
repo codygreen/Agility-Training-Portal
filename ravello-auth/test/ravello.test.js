@@ -19,11 +19,12 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 const sinon = require('sinon');
+const dotenv = require('dotenv').config();
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const Auth = require('../index.js');
+const Auth = require('../ravello.js');
 let r = require('ravello-js');
 const result = require('dotenv').config();
 
@@ -62,8 +63,8 @@ describe('Test RavelloAuth Class', function () {
         return auth.auth()
             .then(res => {
                 // make sure we have a JWT token
-                expect(res).to.be.an('object');
-                expect(res.jwt).to.be.an('string');
+                expect(res).to.be.an('string');
+                
                 console.log(res);
             });
     });

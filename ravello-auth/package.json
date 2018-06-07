@@ -2,10 +2,10 @@
   "name": "ravello-auth",
   "version": "1.0.0",
   "description": "authenticate against Ravello identity domain",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "mocha --recursive ./test/",
-    "coverage": "istanbul cover _mocha -- -R spec"
+    "test": "mocha --recursive ./test/*.test.js",
+    "coverage": "istanbul cover _mocha -- -R spec --recursive ./test/*.test.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "dotenv": "^6.0.0",
+    "grpc": "^1.12.2",
     "jsonwebtoken": "^8.2.2",
     "ravello-js": "^1.0.6"
   }
