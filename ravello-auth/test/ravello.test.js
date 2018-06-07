@@ -58,7 +58,7 @@ describe('Test RavelloAuth Class', function () {
         expect(auth.password).to.be.an('string');
         expect(auth.password).to.equal(password);
         expect(auth.domain).to.be.an('string');
-        expect(auth.domain).to.equal(domainn);
+        expect(auth.domain).to.equal(domain);
         
         return auth.auth()
             .then(res => {
