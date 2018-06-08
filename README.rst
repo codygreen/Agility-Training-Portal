@@ -20,6 +20,7 @@ F5 Agility Training Portal
 =========================================================
 
 |travis build|
+|coveralls coverage|
 
 This application provides a training portal for the Oracle Ravello Cloud.  This training portal makes it
 easy for organizations to host large training events without requiring any registration or personal information
@@ -59,3 +60,5 @@ in this project.
 
 .. |travis build| image:: https://travis-ci.org/codygreen/Agility-Training-Portal.svg?branch=master
     :target: https://travis-ci.org/codygreen/Agility-Training-Portal
+.. |coveralls coverage| image:: https://coveralls.io/repos/github/codygreen/Agility-Training-Portal/badge.svg?branch=master
+:target: https://coveralls.io/github/codygreen/Agility-Training-Portal?branch=master
