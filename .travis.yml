@@ -3,6 +3,7 @@ node_js:
   - "lts/*"
 env:
   - TEST_DIR=ravello-auth
+  - TEST_DIR=ravello-bluprints
 cache:
   directories:
     - node_modules
