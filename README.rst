@@ -16,7 +16,7 @@
    limitations under the License.
    -->
 
-F5 Agility Training Portal - Ravello Authentication Microservice 
+F5 Agility Training Portal
 =========================================================
 
 |travis build|
