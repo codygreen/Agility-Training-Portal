@@ -61,4 +61,4 @@ in this project.
 .. |travis build| image:: https://travis-ci.org/codygreen/Agility-Training-Portal.svg?branch=master
     :target: https://travis-ci.org/codygreen/Agility-Training-Portal
 .. |coveralls coverage| image:: https://coveralls.io/repos/github/codygreen/Agility-Training-Portal/badge.svg?branch=master
-:target: https://coveralls.io/github/codygreen/Agility-Training-Portal?branch=master
+    :target: https://coveralls.io/github/codygreen/Agility-Training-Portal?branch=master
