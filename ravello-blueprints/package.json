@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "dotenv": "^6.0.0",
-    "ravello-js": "^1.0.6"
+    "ravello-js": "^1.0.6",
+    "redis": "^2.8.0"
   }
 }

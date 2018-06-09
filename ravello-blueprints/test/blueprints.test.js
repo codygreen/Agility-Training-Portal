@@ -27,6 +27,7 @@ chai.should();
 const RavelloBlueprints = require('../blueprints');
 const r = require('ravello-js');
 const f = require('./fixtures/ravello');
+const redis = require('redis');
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 const domain = process.env.DOMAIN;
@@ -85,3 +86,35 @@ describe('Test Errors', function() {
     });
 });
 
+describe('Test Indexing', function() {
+    it('Test creation of an index', function() {
+        const b = new RavelloBlueprints();
+        sinon.stub(r, 'listBlueprints').resolves(f.blueprints);
+        return b.listBlueprints().then((res) => {
+            expect(res).to.be.an('array');
+            console.log('BP: %j' + res[0]);
+            return b.buildIndex(res);
+        })
+        // .then((res) => {
+        //     console.log('RESULTS: ');
+        // })
+        .catch((err) => {
+            console.error(err);
+        });
+    });
+    after(function() {
+        r.listBlueprints.restore();
+    });
+});
+
+describe('Test redis functions', function() {
+    it('sadd', function() {
+        const b = new RavelloBlueprints();
+        //TODO: how should we stub the redis client???
+        b.sadd('test', 'test');
+    });
+    it('sinter', function() {
+        const b = new RavelloBlueprints();
+        b.sinter('agility', '2017');
+    })
+})
