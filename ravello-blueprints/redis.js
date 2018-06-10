@@ -18,9 +18,10 @@
 const dotenv = require('dotenv').config();
 const redis = require('redis');
 const {promisify} = require('util');
-const client = redis.createClient();
-const setAsync = promisify(client.set).bind(client);
-const saddAsync = promisify(client.sadd).bind(client);
+// const client = redis.createClient();
+const client = null;
+// const setAsync = promisify(client.set).bind(client);
+// const saddAsync = promisify(client.sadd).bind(client);
 
 /**
  * add key to redis
@@ -37,8 +38,12 @@ exports.add = function(value = null, key = null) {
             reject(new Error('add requires a key'));
             return;
         }
+        client = redis.createClient();
+        const setAsync = promisify(client.set).bind(client);
+        const saddAsync = promisify(client.sadd).bind(client);
         return setAsync(key, value).then((res) => {
             console.log('REDIS ADD RES: ' + res);
+            client.quit();
             resolve();
         })
         .catch((err) => {
@@ -63,7 +68,9 @@ exports.sadd = function (value = null, key = null, map = null) {
             reject(new Error('sadd expects a key'));
             return;
         }
-
+        client = redis.createClient();
+        const setAsync = promisify(client.set).bind(client);
+        const saddAsync = promisify(client.sadd).bind(client);
         // iterate through values and create array of promises
         let promises = []
         if(Array.isArray(value)) {
@@ -73,6 +80,7 @@ exports.sadd = function (value = null, key = null, map = null) {
         }
         Promise.all(promises)
         .then(res => {
+            client.quit();
             resolve(res);
         })
         .catch(err => {
@@ -90,6 +98,6 @@ exports.sinter = function(keys = []) {
     //TODO: implement this so we can search blueprints based off a query string
 }
 
-exports.quit = function() {
-    client.quit();
-}
+// exports.quit = function() {
+//     client.quit();
+// }

@@ -111,7 +111,7 @@ class RavelloBlueprints {
             })
             // add data to redis
             index.forEach(redis.sadd);
-            redis.quit();
+            //redis.quit();
             console.log('WERE DONE');
             resolve(index);
         }).catch((err) => {

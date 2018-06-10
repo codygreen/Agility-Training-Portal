@@ -28,6 +28,7 @@ const RavelloBlueprints = require('../blueprints');
 const r = require('ravello-js');
 const f = require('./fixtures/ravello');
 const redis = require('../redis');
+
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 const domain = process.env.DOMAIN;
@@ -91,11 +92,13 @@ describe('Test Errors', function() {
 });
 
 describe('Test Indexing', function() {
-    it('Test creation of an index', function() {
-        const b = new RavelloBlueprints();
+    before(function() {
         sinon.stub(r, 'listBlueprints').resolves(f.blueprints);
         sinon.stub(redis, 'add').resolves(null);
         sinon.stub(redis, 'sadd').resolves(null);
+    })
+    it('Test creation of an index', function() {
+        const b = new RavelloBlueprints();
         return b.listBlueprints().then((res) => {
             expect(res).to.be.an('array');
             console.log('BP: %j' + res[0]);
