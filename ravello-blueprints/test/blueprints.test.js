@@ -19,21 +19,36 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 const sinon = require('sinon');
+const proxyquire = require('proxyquire');
 const dotenv = require('dotenv').config();
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const RavelloBlueprints = require('../blueprints');
+//const RavelloBlueprints = require('../blueprints');
+let RavelloBlueprints = null;
 const r = require('ravello-js');
 const f = require('./fixtures/ravello');
-const redis = require('../redis');
+const stubRavello = true;
 
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 const domain = process.env.DOMAIN;
 
+class BlueprintCacheMock {
+    add() {return 'OK'}
+    addSet() {return 'OK'}
+    flushall() {return}
+    quit() {return}
+}
+
+
 describe('Test RavelloBlueprint Class', function() {
+    beforeEach(function() {
+        RavelloBlueprints = proxyquire('../blueprints', {
+            './blueprint-cache' : BlueprintCacheMock
+        });
+    });
     it('Test constructor', function() {
         (function () {
             delete process.env.USERNAME;
@@ -52,8 +67,9 @@ describe('Test RavelloBlueprint Class', function() {
             const  b = new RavelloBlueprints();
         }).should.throw(Error);
         process.env.DOMAIN = domain;
-
-        const b = new RavelloBlueprints();
+        const BlueprintCache = sinon.createStubInstance(require('../blueprint-cache'));
+        const b = new RavelloBlueprints({stub: true});
+        
         expect(b).to.be.an('object');
         expect(b.username).to.be.an('string');
         expect(b.username === process.env.USERNAME);
@@ -62,12 +78,11 @@ describe('Test RavelloBlueprint Class', function() {
         expect(b.domain).to.be.an('string');
         expect(b.domain === process.env.DOMAIN);
     });
-    after(function() {
-        r.listBlueprints.restore();
-    });
+  
     it('Test listBlueprints method', function() {
         const b = new RavelloBlueprints();
         sinon.stub(r, 'listBlueprints').resolves(f.blueprints);
+        return b.listBlueprints().should.eventually.to.be.an('array');
         return b.listBlueprints().then((res) => {
             expect(res).to.be.an('array');
          })
@@ -75,28 +90,21 @@ describe('Test RavelloBlueprint Class', function() {
              console.error(err);
          });
     });
-});
-describe('Test Errors', function() {
-    it('Test an empty blueprint', function() {
-        const b = new RavelloBlueprints();
-        sinon.stub(r, 'listBlueprints').resolves(null);
-        return b.listBlueprints().should.be.rejectedWith(Error);
-    });
     after(function() {
         r.listBlueprints.restore();
-    });
-    it('Test buildIndex catch statement', function() {
-        const b = new RavelloBlueprints();
-        return b.buildIndex(null).should.be.rejectedWith(Error);
     });
 });
 
 describe('Test Indexing', function() {
-    before(function() {
+    beforeEach(function() {
+        RavelloBlueprints = proxyquire('../blueprints', {
+            './blueprint-cache' : BlueprintCacheMock
+        });
         sinon.stub(r, 'listBlueprints').resolves(f.blueprints);
-        sinon.stub(redis, 'add').resolves(null);
-        sinon.stub(redis, 'sadd').resolves(null);
-    })
+    });
+    afterEach(function() {
+        r.listBlueprints.restore();
+    });
     it('Test creation of an index', function() {
         const b = new RavelloBlueprints();
         return b.listBlueprints().then((res) => {
@@ -121,9 +129,19 @@ describe('Test Indexing', function() {
             console.error(err);
         });
     });
-    after(function() {
-        r.listBlueprints.restore();
-        redis.add.restore();
-        redis.sadd.restore();
-    });
 });
+
+// describe('Test Errors', function() {
+//     it('Test an empty blueprint', function() {
+//         const b = new RavelloBlueprints({stub: true});
+//         sinon.stub(r, 'listBlueprints').resolves(null);
+//         return b.listBlueprints().should.eventually.rejectedWith(Error)
+//     });
+//     after(function() {
+//         r.listBlueprints.restore();
+//     });
+//     // it('Test buildIndex catch statement', function() {
+//     //     const b = new RavelloBlueprints({stub: true});
+//     //     return b.buildIndex(null).should.eventually.rejectedWith(Error)
+//     // });
+// });

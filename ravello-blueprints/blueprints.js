@@ -17,15 +17,11 @@
 
 const r = require('ravello-js');
 const dotenv = require('dotenv').config();
-const redis = require('./redis');
-// const redis = require('redis');
-// const {promisify} = require('util');
-// const client = redis.createClient();
-// const setAsync = promisify(client.set).bind(client);
-// const saddAsync = promisify(client.sadd).bind(client);
+const BlueprintCache = require('./blueprint-cache');
+const {promisify} = require('util');
 
 class RavelloBlueprints {
-    constructor () {
+    constructor (opts = {}) {
         if (!process.env.USERNAME) {
             throw new Error('RavelloAuth.constructor Error: a username was not supplied');
         }
@@ -51,10 +47,9 @@ class RavelloBlueprints {
         Object.keys(conf.credentials).map(key => this[key] = conf.credentials[key]);
         r.configure(conf);
 
-        // client.on('error', function (err) {
-        //     console.error('REDIS ERROR: ' + err);
-        // });
-    }
+        // configure cache
+        this.cache = new BlueprintCache();
+    };
 
     listBlueprints() {
         return new Promise((resolve, reject) => {
@@ -67,7 +62,7 @@ class RavelloBlueprints {
                 }
             })
         }).catch((err) => {
-            console.error(err);
+            //console.error(err);
             reject(err);
         });
     };
@@ -83,13 +78,13 @@ class RavelloBlueprints {
         let index = new Map();
         return new Promise((resolve, reject) => {
             // check that blueprints is an array
-            if(!Array.isArray(blueprints)) {
-                reject(new Error('buildIndex requires an array of blueprints'));
-            }
+            if(!Array.isArray(blueprints))
+                return reject(new Error('buildIndex requires an array of blueprints'));
+            
             // itereate through blueprints
             blueprints.map(x =>  {
-                // add the blueprint name to redis
-                redis.add(x.name, x.id);
+                // add the blueprint name to cache
+                this.cache.add(x.name, x.id);
                 // normalize the blueprint name
                 const normWords = this.normalize(x.name);
                 console.log('NORMWORDS: ', normWords);
@@ -109,14 +104,14 @@ class RavelloBlueprints {
                     }
                 });
             })
-            // add data to redis
-            index.forEach(redis.sadd);
-            //redis.quit();
+            // add data to cache
+            index.forEach(this.cache.addSet);
+            this.cache.quit();
             console.log('WERE DONE');
             resolve(index);
         }).catch((err) => {
             console.error(err);
-            reject(err);
+            //reject(err);
         });
     };
 
