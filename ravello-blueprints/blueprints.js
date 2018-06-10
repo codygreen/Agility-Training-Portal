@@ -18,7 +18,10 @@
 const r = require('ravello-js');
 const dotenv = require('dotenv').config();
 const redis = require('redis');
+const {promisify} = require('util');
 const client = redis.createClient();
+const setAsync = promisify(client.set).bind(client);
+const saddAsync = promisify(client.sadd).bind(client);
 
 class RavelloBlueprints {
     constructor () {
@@ -57,10 +60,25 @@ class RavelloBlueprints {
      *
      * @return {Boolean}
      */
-    add(value, key) {
-        //TODO: provide return values to test agains
-        client.set(key, value, redis.print);
-        return true;
+    add(value = null, key = null) {
+        return new Promise((resolve, reject) => {
+            if(!value) {
+                reject(new Error('add requires a value'));
+                return;
+            }
+            if(!key) {
+                reject(new Error('add requires a key'));
+                return;
+            }
+            return setAsync(key, value).then((res) => {
+                console.log('REDIS ADD RES: ' + res);
+                resolve();
+            })
+            .catch((err) => {
+                console.error(err);
+                reject(err);
+            });
+        });
     };
 
     /**
@@ -68,17 +86,33 @@ class RavelloBlueprints {
      *
      * @return {Boolean}
      */
-    sadd(value, key, map) {
-        //TODO: provide return values to test agains
-        if(typeof(value) == 'object') {
-            value.map(v => {
-                client.sadd(key, v, redis.print);
-            })
-        } else {
-            client.sadd(key, value, redis.print);
-        }
+    sadd(value = null, key = null, map = null) {
+        return new Promise((resolve, reject) => {
+            if(!value) {
+                reject(new Error('sadd expects a value'));
+                return;
+            }
+            if(!key) {
+                reject(new Error('sadd expects a key'));
+                return;
+            }
 
-        return true;
+            // iterate through values and create array of promises
+            let promises = []
+            if(Array.isArray(value)) {
+                value.map(v => {
+                    promises.push(client.sadd(key, v));
+                });
+            }
+            Promise.all(promises)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(err => {
+                console.error(err);
+                reject(err);
+            });
+        });
     };
 
     /**
@@ -107,13 +141,18 @@ class RavelloBlueprints {
 
     /**
      * build an index of blueprint names to blueprint ids
-     *
+     * 
+     * @param {array} - array of blueprints
      * @return {array}
      */
     buildIndex(blueprints = []) {
         // create an empty map
         let index = new Map();
         return new Promise((resolve, reject) => {
+            // check that blueprints is an array
+            if(!Array.isArray(blueprints)) {
+                reject(new Error('buildIndex requires an array of blueprints'));
+            }
             // itereate through blueprints
             blueprints.map(x =>  {
                 // add the blueprint name to redis
@@ -130,13 +169,8 @@ class RavelloBlueprints {
                         console.log('WORD EXISTS IN INDEX');
                         // get the current blueprint(s) associated with the index word
                         let blist = index.get(word);
-                        console.log('TYPE: ' + typeof(blist));
-                        // if there is more than one, it will be an array
-// TODO: this was never getting called so commented out for now but check back on this
-                        if(typeof(blist) === 'object')
-                             index.set(word, blist.push(x.id));
-                        else
-                            index.set(word, [blist, x.id]);
+                        blist.push(x.id);
+                        index.set(word, blist);
                     } else {
                         index.set(word, [x.id]);
                     }
@@ -146,7 +180,7 @@ class RavelloBlueprints {
             index.forEach(this.sadd);
             client.quit();
             console.log('WERE DONE');
-            resolve();
+            resolve(index);
         }).catch((err) => {
             console.error(err);
             reject(err);

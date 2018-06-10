@@ -84,6 +84,22 @@ describe('Test Errors', function() {
     after(function() {
         r.listBlueprints.restore();
     });
+    it('Test buildIndex catch statement', function() {
+        const b = new RavelloBlueprints();
+        return b.buildIndex(null).should.be.rejectedWith(Error);
+    });
+    it('Redis add error', function() {
+        const b = new RavelloBlueprints();
+        return b.add(null).should.be.rejectedWith(Error);
+        return b.add(1, null).should.be.rejectedWith(Error);
+        return b.add(1,2, redis.print).should.be.rejectedWith(Error);
+    });
+    it('Redis sadd error', function() {
+        const b = new RavelloBlueprints();
+        return b.sadd(null).should.be.rejectedWith(Error);
+        return b.sadd(1, null).should.be.rejectedWith(Error);
+        return b.sadd(1,2, redis.print).should.be.rejectedWith(Error);
+    });
 });
 
 describe('Test Indexing', function() {
@@ -95,9 +111,19 @@ describe('Test Indexing', function() {
             console.log('BP: %j' + res[0]);
             return b.buildIndex(res);
         })
-        // .then((res) => {
-        //     console.log('RESULTS: ');
-        // })
+        .then((res) => {
+            console.log('RESULTS: ' + res.get('agility').toString());
+            expect(res.size).to.be.equal(10);
+            expect(res.get('agility')).to.be.an('array');
+            expect(res.get('agility').length).to.be.equal(3);
+            expect(res.get('agility').toString()).to.equal('86246478,3125663532855,78934538');
+            expect(res.get('2017')).to.be.an('array');
+            expect(res.get('2017').length).to.be.equal(1);
+            expect(res.get('2017').toString()).to.equal('86246478');
+            expect(res.get('portal')).to.be.an('array');
+            expect(res.get('portal').length).to.be.equal(1);
+            expect(res.get('portal').toString()).to.equal('3125663532855');
+        })
         .catch((err) => {
             console.error(err);
         });
