@@ -17,11 +17,12 @@
 
 const r = require('ravello-js');
 const dotenv = require('dotenv').config();
-const redis = require('redis');
-const {promisify} = require('util');
-const client = redis.createClient();
-const setAsync = promisify(client.set).bind(client);
-const saddAsync = promisify(client.sadd).bind(client);
+const redis = require('./redis');
+// const redis = require('redis');
+// const {promisify} = require('util');
+// const client = redis.createClient();
+// const setAsync = promisify(client.set).bind(client);
+// const saddAsync = promisify(client.sadd).bind(client);
 
 class RavelloBlueprints {
     constructor () {
@@ -50,77 +51,9 @@ class RavelloBlueprints {
         Object.keys(conf.credentials).map(key => this[key] = conf.credentials[key]);
         r.configure(conf);
 
-        client.on('error', function (err) {
-            console.error('REDIS ERROR: ' + err);
-        });
-    }
-
-    /**
-     * add key to redis
-     *
-     * @return {Boolean}
-     */
-    add(value = null, key = null) {
-        return new Promise((resolve, reject) => {
-            if(!value) {
-                reject(new Error('add requires a value'));
-                return;
-            }
-            if(!key) {
-                reject(new Error('add requires a key'));
-                return;
-            }
-            return setAsync(key, value).then((res) => {
-                console.log('REDIS ADD RES: ' + res);
-                resolve();
-            })
-            .catch((err) => {
-                console.error(err);
-                reject(err);
-            });
-        });
-    };
-
-    /**
-     * add map key to redis
-     *
-     * @return {Boolean}
-     */
-    sadd(value = null, key = null, map = null) {
-        return new Promise((resolve, reject) => {
-            if(!value) {
-                reject(new Error('sadd expects a value'));
-                return;
-            }
-            if(!key) {
-                reject(new Error('sadd expects a key'));
-                return;
-            }
-
-            // iterate through values and create array of promises
-            let promises = []
-            if(Array.isArray(value)) {
-                value.map(v => {
-                    promises.push(client.sadd(key, v));
-                });
-            }
-            Promise.all(promises)
-            .then(res => {
-                resolve(res);
-            })
-            .catch(err => {
-                console.error(err);
-                reject(err);
-            });
-        });
-    };
-
-    /**
-     * find intersection of keys
-     * @return {array}
-     */
-    sinter(keys = []) {
-        //TODO: implement this so we can search blueprints based off a query string
+        // client.on('error', function (err) {
+        //     console.error('REDIS ERROR: ' + err);
+        // });
     }
 
     listBlueprints() {
@@ -156,7 +89,7 @@ class RavelloBlueprints {
             // itereate through blueprints
             blueprints.map(x =>  {
                 // add the blueprint name to redis
-                this.add(x.name, x.id);
+                redis.add(x.name, x.id);
                 // normalize the blueprint name
                 const normWords = this.normalize(x.name);
                 console.log('NORMWORDS: ', normWords);
@@ -177,8 +110,8 @@ class RavelloBlueprints {
                 });
             })
             // add data to redis
-            index.forEach(this.sadd);
-            client.quit();
+            index.forEach(redis.sadd);
+            redis.quit();
             console.log('WERE DONE');
             resolve(index);
         }).catch((err) => {

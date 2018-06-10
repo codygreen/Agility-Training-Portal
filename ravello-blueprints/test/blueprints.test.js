@@ -27,7 +27,7 @@ chai.should();
 const RavelloBlueprints = require('../blueprints');
 const r = require('ravello-js');
 const f = require('./fixtures/ravello');
-const redis = require('redis');
+const redis = require('../redis');
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 const domain = process.env.DOMAIN;
@@ -88,24 +88,14 @@ describe('Test Errors', function() {
         const b = new RavelloBlueprints();
         return b.buildIndex(null).should.be.rejectedWith(Error);
     });
-    it('Redis add error', function() {
-        const b = new RavelloBlueprints();
-        return b.add(null).should.be.rejectedWith(Error);
-        return b.add(1, null).should.be.rejectedWith(Error);
-        return b.add(1,2, redis.print).should.be.rejectedWith(Error);
-    });
-    it('Redis sadd error', function() {
-        const b = new RavelloBlueprints();
-        return b.sadd(null).should.be.rejectedWith(Error);
-        return b.sadd(1, null).should.be.rejectedWith(Error);
-        return b.sadd(1,2, redis.print).should.be.rejectedWith(Error);
-    });
 });
 
 describe('Test Indexing', function() {
     it('Test creation of an index', function() {
         const b = new RavelloBlueprints();
         sinon.stub(r, 'listBlueprints').resolves(f.blueprints);
+        sinon.stub(redis, 'add').resolves(null);
+        sinon.stub(redis, 'sadd').resolves(null);
         return b.listBlueprints().then((res) => {
             expect(res).to.be.an('array');
             console.log('BP: %j' + res[0]);
@@ -130,17 +120,7 @@ describe('Test Indexing', function() {
     });
     after(function() {
         r.listBlueprints.restore();
+        redis.add.restore();
+        redis.sadd.restore();
     });
 });
-
-describe('Test redis functions', function() {
-    it('sadd', function() {
-        const b = new RavelloBlueprints();
-        //TODO: how should we stub the redis client???
-        b.sadd('test', 'test');
-    });
-    it('sinter', function() {
-        const b = new RavelloBlueprints();
-        b.sinter('agility', '2017');
-    })
-})
